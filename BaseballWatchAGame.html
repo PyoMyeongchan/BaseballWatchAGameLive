@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>직관노트 — 기획서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Serif+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --field:#12332B;
+    --field-deep:#0B211C;
+    --chalk:#F4F1E8;
+    --dugout:#8C5A2B;
+    --scoreboard:#E4A93A;
+    --ink:#1C2420;
+    --ink-soft:#4A5650;
+    --line:#2E4A40;
+    --hit:#C8543C;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:var(--chalk);
+    color:var(--ink);
+    font-family:'Noto Serif KR', serif;
+    line-height:1.7;
+  }
+  .display{font-family:'Oswald', sans-serif; letter-spacing:0.02em;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+
+  /* ===== HERO ===== */
+  .hero{
+    background:
+      radial-gradient(circle at 85% -10%, rgba(228,169,58,0.15), transparent 45%),
+      linear-gradient(180deg, var(--field) 0%, var(--field-deep) 100%);
+    color:var(--chalk);
+    padding:72px 24px 56px;
+    position:relative;
+    overflow:hidden;
+    border-bottom:6px solid var(--scoreboard);
+  }
+  .hero::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background-image:
+      repeating-linear-gradient(90deg, rgba(244,241,232,0.035) 0 1px, transparent 1px 64px);
+    pointer-events:none;
+  }
+  .hero-inner{max-width:920px;margin:0 auto;position:relative;}
+  .scoreboard-tag{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.18em;
+    color:var(--scoreboard);
+    border:1px solid rgba(228,169,58,0.4);
+    padding:6px 14px;
+    border-radius:2px;
+    margin-bottom:28px;
+  }
+  .scoreboard-tag .dot{width:6px;height:6px;background:var(--scoreboard);border-radius:50%;display:inline-block;}
+  .hero h1{
+    font-family:'Oswald',sans-serif;
+    font-weight:700;
+    font-size:clamp(40px, 7vw, 76px);
+    line-height:0.98;
+    letter-spacing:0.01em;
+    margin-bottom:18px;
+  }
+  .hero h1 span{color:var(--scoreboard);}
+  .hero p.sub{
+    font-family:'Noto Serif KR',serif;
+    font-size:18px;
+    color:rgba(244,241,232,0.78);
+    max-width:520px;
+    margin-bottom:36px;
+  }
+  .linescore{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    border:1px solid rgba(244,241,232,0.25);
+    max-width:620px;
+  }
+  .linescore div{
+    padding:14px 16px;
+    border-right:1px solid rgba(244,241,232,0.25);
+  }
+  .linescore div:last-child{border-right:none;}
+  .linescore .label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    letter-spacing:0.12em;
+    color:rgba(244,241,232,0.55);
+    text-transform:uppercase;
+    margin-bottom:6px;
+  }
+  .linescore .val{
+    font-family:'Oswald',sans-serif;
+    font-size:22px;
+    color:var(--chalk);
+    font-weight:600;
+  }
+
+  /* ===== SECTIONS ===== */
+  .wrap{max-width:920px;margin:0 auto;padding:0 24px;}
+  section{padding:56px 0;border-bottom:1px solid var(--line);}
+  section:last-of-type{border-bottom:none;}
+  .inning{
+    display:flex;
+    align-items:baseline;
+    gap:16px;
+    margin-bottom:28px;
+  }
+  .inning .num{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    color:var(--hit);
+    background:rgba(200,84,60,0.1);
+    border:1px solid rgba(200,84,60,0.3);
+    padding:4px 10px;
+    border-radius:2px;
+    white-space:nowrap;
+  }
+  .inning h2{
+    font-family:'Oswald',sans-serif;
+    font-size:clamp(24px,3.4vw,32px);
+    font-weight:600;
+    color:var(--field-deep);
+  }
+  .lead{
+    font-size:16px;
+    color:var(--ink-soft);
+    max-width:640px;
+    margin-bottom:8px;
+  }
+
+  .meta-table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+  }
+  .meta-table tr{border-bottom:1px solid var(--line);}
+  .meta-table tr:last-child{border-bottom:none;}
+  .meta-table td{padding:12px 0;font-size:15px;}
+  .meta-table td:first-child{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+    width:160px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    vertical-align:top;
+    padding-top:14px;
+  }
+
+  .why-list{list-style:none;margin-top:18px;}
+  .why-list li{
+    position:relative;
+    padding:10px 0 10px 26px;
+    font-size:15.5px;
+    color:var(--ink);
+  }
+  .why-list li::before{
+    content:"·";
+    position:absolute;
+    left:6px;
+    top:8px;
+    color:var(--hit);
+    font-size:22px;
+    line-height:1;
+  }
+
+  .feature-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1px;
+    background:var(--line);
+    margin-top:24px;
+    border:1px solid var(--line);
+  }
+  .feature-card{
+    background:var(--chalk);
+    padding:26px 24px;
+  }
+  .feature-card .fnum{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--scoreboard);
+    background:var(--field-deep);
+    display:inline-block;
+    padding:2px 8px;
+    border-radius:2px;
+    margin-bottom:12px;
+  }
+  .feature-card h3{
+    font-family:'Oswald',sans-serif;
+    font-size:19px;
+    font-weight:600;
+    margin-bottom:10px;
+    color:var(--field-deep);
+  }
+  .feature-card ul{
+    list-style:none;
+    font-size:14.5px;
+    color:var(--ink-soft);
+  }
+  .feature-card ul li{padding:3px 0; position:relative; padding-left:14px;}
+  .feature-card ul li::before{content:"–"; position:absolute; left:0; color:var(--ink-soft);}
+
+  .screen-flow{
+    display:flex;
+    flex-wrap:wrap;
+    gap:0;
+    margin-top:24px;
+    align-items:stretch;
+  }
+  .screen-step{
+    background:var(--field);
+    color:var(--chalk);
+    padding:18px 20px;
+    font-family:'Oswald',sans-serif;
+    font-size:15px;
+    font-weight:500;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex:1 1 200px;
+    min-width:180px;
+  }
+  .screen-step .n{
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--scoreboard);
+    font-size:13px;
+  }
+  .arrow{
+    display:flex;align-items:center;justify-content:center;
+    color:var(--ink-soft);
+    padding:0 6px;
+    font-size:18px;
+    flex:0 0 auto;
+  }
+
+  .stack-tags{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:20px;
+  }
+  .stack-tags span{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    background:var(--field-deep);
+    color:var(--chalk);
+    padding:8px 14px;
+    border-radius:2px;
+  }
+  .stack-tags span.opt{
+    background:transparent;
+    color:var(--ink-soft);
+    border:1px dashed var(--ink-soft);
+  }
+
+  .order-list{margin-top:22px;counter-reset:step;}
+  .order-item{
+    display:grid;
+    grid-template-columns:56px 1fr;
+    gap:18px;
+    padding:16px 0;
+    border-bottom:1px dashed var(--line);
+    align-items:start;
+  }
+  .order-item:last-child{border-bottom:none;}
+  .order-item .step-n{
+    font-family:'Oswald',sans-serif;
+    font-size:28px;
+    font-weight:700;
+    color:var(--hit);
+    line-height:1;
+  }
+  .order-item .step-body h4{
+    font-family:'Oswald',sans-serif;
+    font-size:16.5px;
+    font-weight:600;
+    margin-bottom:4px;
+    color:var(--field-deep);
+  }
+  .order-item .step-body p{font-size:14.5px;color:var(--ink-soft);}
+
+  .future-box{
+    margin-top:24px;
+    border:1px solid var(--dugout);
+    background:rgba(140,90,43,0.06);
+    padding:24px;
+  }
+  .future-box .tag{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    color:var(--dugout);
+    text-transform:uppercase;
+    margin-bottom:12px;
+    display:block;
+  }
+  .future-box ul{list-style:none;}
+  .future-box ul li{
+    padding:6px 0 6px 20px;
+    position:relative;
+    font-size:14.5px;
+    color:var(--ink);
+  }
+  .future-box ul li::before{content:"→"; position:absolute; left:0; color:var(--dugout);}
+
+  .checklist{margin-top:22px;}
+  .checklist li{
+    list-style:none;
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    padding:10px 0;
+    border-bottom:1px solid var(--line);
+    font-size:15px;
+  }
+  .checklist li:last-child{border-bottom:none;}
+  .checklist .box{
+    width:16px;height:16px;
+    border:2px solid var(--field);
+    flex:0 0 auto;
+    margin-top:3px;
+  }
+
+  footer{
+    background:var(--field-deep);
+    color:rgba(244,241,232,0.6);
+    text-align:center;
+    padding:32px 24px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.06em;
+  }
+  footer strong{color:var(--scoreboard);}
+
+  @media (max-width:640px){
+    .feature-grid{grid-template-columns:1fr;}
+    .linescore{grid-template-columns:repeat(2,1fr);}
+    .linescore div:nth-child(2){border-right:none;}
+    .screen-flow{flex-direction:column;}
+    .arrow{transform:rotate(90deg);}
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="scoreboard-tag"><span class="dot"></span>PROJECT PLAN · 1군 진입 전 개인 개발 프로젝트</div>
+    <h1>직관노트<br><span>My Ballpark Log</span></h1>
+    <p class="sub">야구 직관 기록을 사진과 함께 남기고, 나만의 직관 승률을 확인하는 개인용 모바일 앱 기획서.</p>
+    <div class="linescore">
+      <div><div class="label">Platform</div><div class="val">RN · Expo</div></div>
+      <div><div class="label">Phase</div><div class="val">1단계 MVP</div></div>
+      <div><div class="label">Duration</div><div class="val">2–3개월</div></div>
+      <div><div class="label">Storage</div><div class="val">Local</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <section>
+    <div class="inning"><span class="num">TOP 1</span><h2>프로젝트 개요</h2></div>
+    <table class="meta-table">
+      <tr><td>프로젝트명</td><td>(가칭) 직관노트</td></tr>
+      <tr><td>목적</td><td>야구 직관 기록을 사진과 함께 남기고, 개인 통계(승률 등)를 시각화하는 개인용 모바일 앱</td></tr>
+      <tr><td>플랫폼</td><td>React Native (Expo)</td></tr>
+      <tr><td>개발 기간</td><td>약 2~3개월 (퇴근 후 · 주말 작업 기준)</td></tr>
+      <tr><td>데이터 저장</td><td>1단계는 로컬 저장(AsyncStorage), 서버 연동은 2단계에서</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <div class="inning"><span class="num">TOP 2</span><h2>왜 이 프로젝트인가</h2></div>
+    <ul class="why-list">
+      <li>본인이 실제로 야구 직관을 다니는 취미가 있어 사용 목적이 명확함</li>
+      <li>유니티·C# 개발 경험(인터랙티브 병원 시뮬레이션 등)을 살려 새 프레임워크로 확장</li>
+      <li>완성 시 실사용 + 포트폴리오, 두 마리 토끼를 함께 잡을 수 있음</li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="inning"><span class="num">TOP 3</span><h2>1단계 핵심 기능</h2></div>
+    <p class="lead">MVP 범위 — 로컬 저장 기준으로 완결되는 4가지 기능</p>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <span class="fnum">3.1</span>
+        <h3>직관 기록 추가</h3>
+        <ul>
+          <li>날짜 · 구장 · 상대팀(홈/원정)</li>
+          <li>스코어 · 좌석 위치</li>
+          <li>사진 첨부 (표 · 경기장, 1~2장)</li>
+          <li>간단한 메모(직관 소감)</li>
+        </ul>
+      </div>
+      <div class="feature-card">
+        <span class="fnum">3.2</span>
+        <h3>기록 리스트</h3>
+        <ul>
+          <li>날짜순 정렬 카드 뷰</li>
+          <li>대표 사진 · 날짜 · 상대팀</li>
+          <li>결과(승/패/무) 요약 표시</li>
+        </ul>
+      </div>
+      <div class="feature-card">
+        <span class="fnum">3.3</span>
+        <h3>기록 상세 보기</h3>
+        <ul>
+          <li>사진 크게 보기</li>
+          <li>전체 메모 · 좌석 · 구장 정보</li>
+          <li>수정 / 삭제 기능</li>
+        </ul>
+      </div>
+      <div class="feature-card">
+        <span class="fnum">3.4</span>
+        <h3>통계 대시보드</h3>
+        <ul>
+          <li>총 직관 횟수</li>
+          <li>팀별 직관 승률</li>
+          <li>구장별 방문 횟수</li>
+          <li>(여유 시) 월별 직관 빈도 그래프</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="inning"><span class="num">TOP 4</span><h2>화면 구성</h2></div>
+    <div class="screen-flow">
+      <div class="screen-step"><span class="n">01</span>홈 / 리스트</div>
+      <div class="arrow">→</div>
+      <div class="screen-step"><span class="n">02</span>기록 추가</div>
+      <div class="arrow">→</div>
+      <div class="screen-step"><span class="n">03</span>기록 상세</div>
+      <div class="arrow">→</div>
+      <div class="screen-step"><span class="n">04</span>통계 화면</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="inning"><span class="num">TOP 5</span><h2>기술 스택 (예정)</h2></div>
+    <div class="stack-tags">
+      <span>React Native</span>
+      <span>Expo</span>
+      <span>TypeScript</span>
+      <span>AsyncStorage</span>
+      <span>expo-image-picker</span>
+      <span class="opt">react-native-calendars (선택)</span>
+      <span class="opt">react-native-chart-kit / victory-native (선택)</span>
+    </div>
+  </section>
+
+  <section>
+    <div class="inning"><span class="num">BOT 1</span><h2>개발 순서</h2></div>
+    <div class="order-list">
+      <div class="order-item"><div class="step-n">01</div><div class="step-body"><h4>Expo 프로젝트 초기 세팅</h4><p>Claude Code에서 프로젝트 폴더 생성 후 Expo 환경 구성</p></div></div>
+      <div class="order-item"><div class="step-n">02</div><div class="step-body"><h4>데이터 모델 설계</h4><p>기록 1건의 구조 정의 — 날짜, 구장, 팀, 스코어, 사진 경로, 메모 등</p></div></div>
+      <div class="order-item"><div class="step-n">03</div><div class="step-body"><h4>기록 추가 화면</h4><p>입력 폼 구성 + 로컬 저장 연동</p></div></div>
+      <div class="order-item"><div class="step-n">04</div><div class="step-body"><h4>리스트 화면</h4><p>저장된 기록을 불러와 카드 형태로 표시</p></div></div>
+      <div class="order-item"><div class="step-n">05</div><div class="step-body"><h4>상세 화면</h4><p>개별 기록 상세 보기, 수정 · 삭제 기능 포함</p></div></div>
+      <div class="order-item"><div class="step-n">06</div><div class="step-body"><h4>통계 화면</h4><p>저장 데이터 기반 계산 및 시각화</p></div></div>
+      <div class="order-item"><div class="step-n">07</div><div class="step-body"><h4>UI 다듬기</h4><p>아이콘, 색상, 빈 상태(empty state) 화면 정리</p></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="inning"><span class="num">BOT 2</span><h2>2단계 — 추후 확장 아이디어</h2></div>
+    <p class="lead">지금은 설계만, 개발은 나중에</p>
+    <div class="future-box">
+      <span class="tag">Future Scope</span>
+      <ul>
+        <li>회원가입 / 로그인 (서버 연동 필요)</li>
+        <li>다른 유저와 기록 공유, 팔로우</li>
+        <li>팀별 · 구장별 전체 유저 랭킹</li>
+        <li>같은 경기 직관한 유저끼리 매칭 / 피드</li>
+        <li>공개 / 비공개 기록 설정</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <div class="inning"><span class="num">BOT 3</span><h2>성공 기준 · 다음 액션</h2></div>
+    <ul class="checklist">
+      <li><span class="box"></span>기록 추가부터 통계 확인까지 전체 플로우가 끊김 없이 동작</li>
+      <li><span class="box"></span>본인 핸드폰에 설치해서 실제로 몇 번 사용해봄</li>
+      <li><span class="box"></span>코드가 GitHub에 정리되어 포트폴리오로 제시 가능한 상태</li>
+    </ul>
+    <div class="order-list" style="margin-top:8px;">
+      <div class="order-item"><div class="step-n">①</div><div class="step-body"><h4>Claude Code 설치</h4></div></div>
+      <div class="order-item"><div class="step-n">②</div><div class="step-body"><h4>새 프로젝트 폴더 생성</h4><p>"React Native Expo 프로젝트 세팅해줘" 요청</p></div></div>
+      <div class="order-item"><div class="step-n">③</div><div class="step-body"><h4>개발 순서 1번부터 진행</h4></div></div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  직관노트 기획서 · <strong>v1.0</strong> · 1단계 MVP 기준
+</footer>
+
+</body>
+</html>
