@@ -361,8 +361,8 @@
     <div class="linescore">
       <div><div class="label">Platform</div><div class="val">RN · Expo</div></div>
       <div><div class="label">Phase</div><div class="val">1단계 MVP</div></div>
-      <div><div class="label">Duration</div><div class="val">2–3개월</div></div>
-      <div><div class="label">Storage</div><div class="val">Local</div></div>
+      <div><div class="label">Duration</div><div class="val">1개월</div></div>
+      <div><div class="label">Method</div><div class="val">바이브코딩</div></div>
     </div>
   </div>
 </div>
@@ -375,8 +375,9 @@
       <tr><td>프로젝트명</td><td>(가칭) 직관노트</td></tr>
       <tr><td>목적</td><td>야구 직관 기록을 사진과 함께 남기고, 개인 통계(승률 등)를 시각화하는 개인용 모바일 앱</td></tr>
       <tr><td>플랫폼</td><td>React Native (Expo)</td></tr>
-      <tr><td>개발 기간</td><td>약 2~3개월 (퇴근 후 · 주말 작업 기준)</td></tr>
-      <tr><td>데이터 저장</td><td>1단계는 로컬 저장(AsyncStorage), 서버 연동은 2단계에서</td></tr>
+      <tr><td>개발 기간</td><td>1개월 (퇴근 후 · 주말 작업 기준)</td></tr>
+      <tr><td>개발 방식</td><td>바이브코딩 — Claude Code와 함께 대화 기반으로 진행</td></tr>
+      <tr><td>데이터 저장</td><td>expo-sqlite로 로컬 저장 (팀별·구장별 통계 쿼리 대응), 서버 연동은 2단계에서</td></tr>
     </table>
   </section>
 
@@ -448,16 +449,26 @@
   </section>
 
   <section>
-    <div class="inning"><span class="num">TOP 5</span><h2>기술 스택 (예정)</h2></div>
+    <div class="inning"><span class="num">TOP 5</span><h2>기술 스택</h2></div>
+    <p class="lead">2026년 기준 Expo 생태계 조사 후 확정한 조합</p>
     <div class="stack-tags">
       <span>React Native</span>
       <span>Expo</span>
       <span>TypeScript</span>
-      <span>AsyncStorage</span>
+      <span>Expo Router</span>
+      <span>expo-sqlite</span>
       <span>expo-image-picker</span>
-      <span class="opt">react-native-calendars (선택)</span>
-      <span class="opt">react-native-chart-kit / victory-native (선택)</span>
+      <span>react-native-calendars</span>
+      <span>Claude Code (바이브코딩)</span>
+      <span class="opt">react-native-chart-kit (선택)</span>
     </div>
+    <table class="meta-table" style="margin-top:28px;">
+      <tr><td>화면 이동</td><td><b>Expo Router</b> — 파일 기반 라우팅. app 폴더에 파일만 추가하면 자동으로 화면(라우트)이 생성되어 4개 화면(홈·추가·상세·통계) 구조 잡기가 직관적. 내부적으로 React Navigation 기반이라 2026년 신규 프로젝트의 사실상 기본 선택지.</td></tr>
+      <tr><td>데이터 저장</td><td><b>expo-sqlite</b> — 팀별 승률, 구장별 방문 횟수 같은 집계·쿼리가 필요해서 단순 키값 저장(AsyncStorage)보다 SQLite가 적합. React Hooks 기반 API(SQLiteProvider, useSQLiteContext)로 Expo 프로젝트에 네이티브 설정 없이 바로 적용 가능.</td></tr>
+      <tr><td>사진 업로드</td><td><b>expo-image-picker</b> — 갤러리에서 사진 선택 또는 카메라 촬영을 지원하는 Expo 표준 라이브러리. 표 사진·경기장 사진 첨부 기능에 그대로 사용.</td></tr>
+      <tr><td>캘린더 UI</td><td><b>react-native-calendars</b> — 순수 JS 구현이라 네이티브 연동 불필요. 날짜별 점(dot) 마킹 기능으로 "이 날 직관 감" 표시에 적합.</td></tr>
+      <tr><td>통계 시각화</td><td><b>react-native-chart-kit</b> (선택) — 승률·방문 횟수 그래프용. victory-native보다 진입장벽이 낮아 처음 다루기 좋음.</td></tr>
+    </table>
   </section>
 
   <section>
@@ -495,11 +506,6 @@
       <li><span class="box"></span>본인 핸드폰에 설치해서 실제로 몇 번 사용해봄</li>
       <li><span class="box"></span>코드가 GitHub에 정리되어 포트폴리오로 제시 가능한 상태</li>
     </ul>
-    <div class="order-list" style="margin-top:8px;">
-      <div class="order-item"><div class="step-n">①</div><div class="step-body"><h4>Claude Code 설치</h4></div></div>
-      <div class="order-item"><div class="step-n">②</div><div class="step-body"><h4>새 프로젝트 폴더 생성</h4><p>"React Native Expo 프로젝트 세팅해줘" 요청</p></div></div>
-      <div class="order-item"><div class="step-n">③</div><div class="step-body"><h4>개발 순서 1번부터 진행</h4></div></div>
-    </div>
   </section>
 
 </div>
