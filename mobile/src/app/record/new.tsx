@@ -11,16 +11,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChipSelect } from '@/components/chip-select';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { KBO_BALLPARKS, KBO_TEAMS } from '@/constants/kbo';
+import { KBO_TEAMS, TEAM_HOME_BALLPARK } from '@/constants/kbo';
 import { Spacing } from '@/constants/theme';
+import { useSettings } from '@/contexts/settings-context';
 import { getRecord, insertRecord, updateRecord } from '@/db/records';
 import type { HomeAway } from '@/db/types';
 import { useTheme } from '@/hooks/use-theme';
 
 const CUSTOM_OPTION = '기타(직접입력)';
 const MAX_PHOTOS = 2;
-const BALLPARK_SET: readonly string[] = KBO_BALLPARKS;
 const TEAM_SET: readonly string[] = KBO_TEAMS;
+const COMPANION_OPTIONS = ['혼자', '친구', '가족', '연인', '직장동료', CUSTOM_OPTION] as const;
 
 function toScoreOrNull(text: string): number | null {
   if (text.trim() === '') return null;
@@ -34,11 +35,10 @@ export default function NewRecordScreen() {
   const db = useSQLiteContext();
   const router = useRouter();
   const theme = useTheme();
+  const { myTeam } = useSettings();
 
   const [loaded, setLoaded] = useState(!isEdit);
   const [date, setDate] = useState<string | null>(null);
-  const [ballpark, setBallpark] = useState<string | null>(null);
-  const [ballparkCustom, setBallparkCustom] = useState('');
   const [opponent, setOpponent] = useState<string | null>(null);
   const [opponentCustom, setOpponentCustom] = useState('');
   const [homeAway, setHomeAway] = useState<HomeAway | null>(null);
@@ -46,6 +46,11 @@ export default function NewRecordScreen() {
   const [opponentScoreText, setOpponentScoreText] = useState('');
   const [seat, setSeat] = useState('');
   const [memo, setMemo] = useState('');
+  const [ticketText, setTicketText] = useState('');
+  const [transportText, setTransportText] = useState('');
+  const [foodText, setFoodText] = useState('');
+  const [companion, setCompanion] = useState<string | null>(null);
+  const [companionCustom, setCompanionCustom] = useState('');
   const [photoUris, setPhotoUris] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -56,8 +61,6 @@ export default function NewRecordScreen() {
     getRecord(db, Number(id)).then((row) => {
       if (!active || !row) return;
       setDate(row.date);
-      setBallpark(BALLPARK_SET.includes(row.ballpark) ? row.ballpark : CUSTOM_OPTION);
-      if (!BALLPARK_SET.includes(row.ballpark)) setBallparkCustom(row.ballpark);
       setOpponent(TEAM_SET.includes(row.opponent) ? row.opponent : CUSTOM_OPTION);
       if (!TEAM_SET.includes(row.opponent)) setOpponentCustom(row.opponent);
       setHomeAway(row.homeAway);
@@ -65,7 +68,15 @@ export default function NewRecordScreen() {
       setOpponentScoreText(row.opponentScore != null ? String(row.opponentScore) : '');
       setSeat(row.seat ?? '');
       setMemo(row.memo ?? '');
+      setTicketText(row.ticketPrice != null ? String(row.ticketPrice) : '');
+      setTransportText(row.transportCost != null ? String(row.transportCost) : '');
+      setFoodText(row.foodCost != null ? String(row.foodCost) : '');
       setPhotoUris(row.photoUris);
+      if (row.companion) {
+        const isPreset = (COMPANION_OPTIONS as readonly string[]).includes(row.companion);
+        setCompanion(isPreset ? row.companion : CUSTOM_OPTION);
+        if (!isPreset) setCompanionCustom(row.companion);
+      }
       setLoaded(true);
     });
     return () => {
@@ -73,7 +84,6 @@ export default function NewRecordScreen() {
     };
   }, [db, id, isEdit]);
 
-  const effectiveBallpark = ballpark === CUSTOM_OPTION ? ballparkCustom.trim() : ballpark;
   const effectiveOpponent = opponent === CUSTOM_OPTION ? opponentCustom.trim() : opponent;
 
   async function handlePickPhotos() {
@@ -101,16 +111,23 @@ export default function NewRecordScreen() {
 
   async function handleSave() {
     if (!date) return setError('날짜를 선택해주세요.');
-    if (!effectiveBallpark) return setError('구장을 선택해주세요.');
     if (!effectiveOpponent) return setError('상대팀을 선택해주세요.');
     if (!homeAway) return setError('홈/원정 여부를 선택해주세요.');
+
+    const ballpark =
+      homeAway === 'HOME'
+        ? (TEAM_HOME_BALLPARK[myTeam!] ?? '기타')
+        : (TEAM_HOME_BALLPARK[effectiveOpponent] ?? '기타');
 
     setError(null);
     setSaving(true);
     try {
+      const effectiveCompanion =
+        companion === CUSTOM_OPTION ? companionCustom.trim() || null : companion;
+
       const input = {
         date,
-        ballpark: effectiveBallpark,
+        ballpark,
         opponent: effectiveOpponent,
         homeAway,
         myScore: toScoreOrNull(myScoreText),
@@ -118,6 +135,10 @@ export default function NewRecordScreen() {
         seat: seat.trim() || null,
         memo: memo.trim() || null,
         photoUris,
+        ticketPrice: toScoreOrNull(ticketText),
+        transportCost: toScoreOrNull(transportText),
+        foodCost: toScoreOrNull(foodText),
+        companion: effectiveCompanion,
       };
       if (isEdit) {
         await updateRecord(db, Number(id), input);
@@ -125,7 +146,8 @@ export default function NewRecordScreen() {
         await insertRecord(db, input);
       }
       router.back();
-    } catch {
+    } catch (e) {
+      console.error('[저장 실패]', e);
       setError('저장에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setSaving(false);
@@ -144,7 +166,7 @@ export default function NewRecordScreen() {
     <ThemedView style={styles.container}>
       <Stack.Screen options={{ title: isEdit ? '기록 수정' : '기록 추가' }} />
       <SafeAreaView style={styles.safeArea} edges={['bottom']}>
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
           <Field label="날짜">
             <Calendar
               current={date ?? undefined}
@@ -152,19 +174,6 @@ export default function NewRecordScreen() {
               onDayPress={(day: DateData) => setDate(day.dateString)}
               maxDate={new Date().toISOString().slice(0, 10)}
             />
-          </Field>
-
-          <Field label="구장">
-            <ChipSelect options={[...KBO_BALLPARKS, CUSTOM_OPTION]} value={ballpark} onChange={setBallpark} />
-            {ballpark === CUSTOM_OPTION && (
-              <TextInput
-                style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
-                placeholder="구장 이름 입력"
-                placeholderTextColor={theme.textSecondary}
-                value={ballparkCustom}
-                onChangeText={setBallparkCustom}
-              />
-            )}
           </Field>
 
           <Field label="상대팀">
@@ -231,6 +240,19 @@ export default function NewRecordScreen() {
             />
           </Field>
 
+          <Field label="동행자">
+            <ChipSelect options={COMPANION_OPTIONS} value={companion} onChange={setCompanion} />
+            {companion === CUSTOM_OPTION && (
+              <TextInput
+                style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
+                placeholder="동행자 입력"
+                placeholderTextColor={theme.textSecondary}
+                value={companionCustom}
+                onChangeText={setCompanionCustom}
+              />
+            )}
+          </Field>
+
           <Field label={`사진 (${photoUris.length}/${MAX_PHOTOS})`}>
             <View style={styles.row}>
               {photoUris.map((uri) => (
@@ -251,6 +273,37 @@ export default function NewRecordScreen() {
                 </Pressable>
               )}
             </View>
+          </Field>
+
+          <Field label="비용 (선택)">
+            <CostRow
+              label="티켓"
+              value={ticketText}
+              onChangeText={setTicketText}
+              theme={theme}
+            />
+            <CostRow
+              label="교통비"
+              value={transportText}
+              onChangeText={setTransportText}
+              theme={theme}
+            />
+            <CostRow
+              label="식비"
+              value={foodText}
+              onChangeText={setFoodText}
+              theme={theme}
+            />
+            {!!(ticketText || transportText || foodText) && (
+              <ThemedText type="small" themeColor="textSecondary" style={styles.costTotal}>
+                합계{' '}
+                {(
+                  (toScoreOrNull(ticketText) ?? 0) +
+                  (toScoreOrNull(transportText) ?? 0) +
+                  (toScoreOrNull(foodText) ?? 0)
+                ).toLocaleString('ko-KR')}원
+              </ThemedText>
+            )}
           </Field>
 
           <Field label="메모">
@@ -288,6 +341,35 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     <View style={styles.field}>
       <ThemedText type="smallBold">{label}</ThemedText>
       {children}
+    </View>
+  );
+}
+
+function CostRow({
+  label,
+  value,
+  onChangeText,
+  theme,
+}: {
+  label: string;
+  value: string;
+  onChangeText: (v: string) => void;
+  theme: ReturnType<typeof import('@/hooks/use-theme').useTheme>;
+}) {
+  return (
+    <View style={styles.costRow}>
+      <ThemedText type="small" themeColor="textSecondary" style={styles.costLabel}>
+        {label}
+      </ThemedText>
+      <TextInput
+        style={[styles.input, styles.costInput, { color: theme.text, backgroundColor: theme.backgroundElement }]}
+        placeholder="0"
+        placeholderTextColor={theme.textSecondary}
+        keyboardType="number-pad"
+        value={value}
+        onChangeText={onChangeText}
+      />
+      <ThemedText type="small" themeColor="textSecondary">원</ThemedText>
     </View>
   );
 }
@@ -364,5 +446,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: Spacing.three,
     borderRadius: Spacing.two,
+  },
+  costRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  costLabel: {
+    width: 48,
+  },
+  costInput: {
+    flex: 1,
+    textAlign: 'right',
+  },
+  costTotal: {
+    textAlign: 'right',
+    marginTop: Spacing.one,
   },
 });

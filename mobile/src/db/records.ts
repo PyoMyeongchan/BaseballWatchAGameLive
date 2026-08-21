@@ -13,6 +13,10 @@ type RecordRow = {
   seat: string | null;
   memo: string | null;
   photo_uris: string | null;
+  ticket_price: number | null;
+  transport_cost: number | null;
+  food_cost: number | null;
+  companion: string | null;
   created_at: string;
 };
 
@@ -28,14 +32,18 @@ function mapRow(row: RecordRow): GameRecord {
     seat: row.seat,
     memo: row.memo,
     photoUris: row.photo_uris ? JSON.parse(row.photo_uris) : [],
+    ticketPrice: row.ticket_price,
+    transportCost: row.transport_cost,
+    foodCost: row.food_cost,
+    companion: row.companion,
     createdAt: row.created_at,
   };
 }
 
 export async function insertRecord(db: SQLiteDatabase, input: GameRecordInput): Promise<number> {
   const result = await db.runAsync(
-    `INSERT INTO records (date, ballpark, opponent, home_away, my_score, opponent_score, seat, memo, photo_uris)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO records (date, ballpark, opponent, home_away, my_score, opponent_score, seat, memo, photo_uris, ticket_price, transport_cost, food_cost, companion)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     input.date,
     input.ballpark,
     input.opponent,
@@ -44,7 +52,11 @@ export async function insertRecord(db: SQLiteDatabase, input: GameRecordInput): 
     input.opponentScore ?? null,
     input.seat ?? null,
     input.memo ?? null,
-    input.photoUris && input.photoUris.length > 0 ? JSON.stringify(input.photoUris) : null
+    input.photoUris && input.photoUris.length > 0 ? JSON.stringify(input.photoUris) : null,
+    input.ticketPrice ?? null,
+    input.transportCost ?? null,
+    input.foodCost ?? null,
+    input.companion ?? null
   );
   return result.lastInsertRowId;
 }
@@ -66,7 +78,7 @@ export async function updateRecord(
 ): Promise<void> {
   await db.runAsync(
     `UPDATE records
-     SET date = ?, ballpark = ?, opponent = ?, home_away = ?, my_score = ?, opponent_score = ?, seat = ?, memo = ?, photo_uris = ?
+     SET date = ?, ballpark = ?, opponent = ?, home_away = ?, my_score = ?, opponent_score = ?, seat = ?, memo = ?, photo_uris = ?, ticket_price = ?, transport_cost = ?, food_cost = ?, companion = ?
      WHERE id = ?`,
     input.date,
     input.ballpark,
@@ -77,6 +89,10 @@ export async function updateRecord(
     input.seat ?? null,
     input.memo ?? null,
     input.photoUris && input.photoUris.length > 0 ? JSON.stringify(input.photoUris) : null,
+    input.ticketPrice ?? null,
+    input.transportCost ?? null,
+    input.foodCost ?? null,
+    input.companion ?? null,
     id
   );
 }
